@@ -79,7 +79,21 @@ namespace TheOtherRoles
 
             if (data.ContainsKey(lang))
             {
-                return key.Replace(keyClean, data[lang]);
+                string cleanedText = key.Replace(keyClean, data[lang]);
+                if (TheOtherRolesPlugin.UnifiedTranslation.Value)
+                {
+                    cleanedText = Regex.Replace(cleanedText, "魔女", "ウィッチ");
+                    cleanedText = Regex.Replace(cleanedText, "魔術", "スペル");
+                    cleanedText = Regex.Replace(cleanedText, "弁護士", "ローヤー");
+                    cleanedText = Regex.Replace(cleanedText, "依頼人", "クライアント");
+                    cleanedText = Regex.Replace(cleanedText, "追跡者", "パスーアー");
+                    cleanedText = Regex.Replace(cleanedText, "『空包』", "『ブランク』");
+                    cleanedText = Regex.Replace(cleanedText, "空包", "ブランク(空包)");
+                    cleanedText = Regex.Replace(cleanedText, "幽霊", "ゴースト");
+                    cleanedText = Regex.Replace(cleanedText, "警備員", "セキュリティガード");
+                    cleanedText = Regex.Replace(cleanedText, "守護天使", "ガーディアンエンジェル");
+                }
+                return cleanedText;
             }
             else if (data.ContainsKey(defaultLanguage))
             {
