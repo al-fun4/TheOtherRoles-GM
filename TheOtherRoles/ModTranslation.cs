@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Data;
 using TheOtherRoles.Patches;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ namespace TheOtherRoles
     {
         public static int defaultLanguage = (int)SupportedLangs.English;
         public static Dictionary<string, Dictionary<int, string>> stringData;
+        public static DataTable replacementStringData = new DataTable("replacementStringDataTable");
 
         public ModTranslation() { 
 
@@ -60,6 +62,20 @@ namespace TheOtherRoles
             }
 
             //TheOtherRolesPlugin.Instance.Log.LogInfo($"Language: {stringData.Keys}");
+            
+            //Make replacement string data
+            replacementStringData.Columns.Add("pattern");
+            replacementStringData.Columns.Add("evaluator");
+            StreamReader sr = new StreamReader(assembly.GetManifestResourceStream("TheOtherRoles.Resources.replacementStringData.csv"),System.Text.Encoding.UTF8);
+            while(!sr.EndOfStream)
+            {
+                string line = sr.ReadLine();
+                string[] values = line.Split(',');
+                replacementStringData.Rows.Add(
+                    Regex.Replace(values[0],"\"",""),
+                    Regex.Replace(values[1],"\"","")
+                );
+            }
         }
 
         public static string getString(string key)
@@ -82,16 +98,10 @@ namespace TheOtherRoles
                 string cleanedText = key.Replace(keyClean, data[lang]);
                 if (TheOtherRolesPlugin.UnifiedTranslation.Value)
                 {
-                    cleanedText = Regex.Replace(cleanedText, "魔女", "ウィッチ");
-                    cleanedText = Regex.Replace(cleanedText, "魔術", "スペル");
-                    cleanedText = Regex.Replace(cleanedText, "弁護士", "ローヤー");
-                    cleanedText = Regex.Replace(cleanedText, "依頼人", "クライアント");
-                    cleanedText = Regex.Replace(cleanedText, "追跡者", "パスーアー");
-                    cleanedText = Regex.Replace(cleanedText, "『空包』", "『ブランク』");
-                    cleanedText = Regex.Replace(cleanedText, "空包", "ブランク(空包)");
-                    cleanedText = Regex.Replace(cleanedText, "幽霊", "ゴースト");
-                    cleanedText = Regex.Replace(cleanedText, "警備員", "セキュリティガード");
-                    cleanedText = Regex.Replace(cleanedText, "守護天使", "ガーディアンエンジェル");
+                    foreach(DataRow dr in replacementStringData.Rows)
+                    {
+                        cleanedText = Regex.Replace(cleanedText, dr["pattern"].ToString(), dr["evaluator"].ToString());
+                    }
                 }
                 return cleanedText;
             }
